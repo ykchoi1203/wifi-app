@@ -2,7 +2,7 @@
 - 서울 공공 데이터 API를 이용해 자신의 위치 또는 특정 위치에서 가장 가까운 공공 와이파이 20개를 찾는 프로젝트
 
 ## Stack
-- Language : `Java`, 'JavaScript'
+- Language : `Java`, `JavaScript`
 - Build : `Maven`
 - Database : `SQLITE`
 - Server : `Tomcat 8.5`
