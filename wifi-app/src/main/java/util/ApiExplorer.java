@@ -13,9 +13,7 @@ import org.json.simple.parser.ParseException;
 import com.google.gson.Gson;
 
 import main.java.dto.WifiDto;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import okhttp3.*;
 
 
 public class ApiExplorer {
@@ -24,19 +22,18 @@ public class ApiExplorer {
 	public ApiExplorer() {}
 	
 	public List<WifiDto> getWifi() throws IOException {
+		ConnectionPool connectionPool = new ConnectionPool();
 		StringBuilder urlBuilder = urlBuilder(1, 10);
 			
 		List<WifiDto> list = new ArrayList<>();;
 	
 		long totalCount = 0;
 				
-		String data = getWifiJson(urlBuilder);
+		String data = getWifiJson(urlBuilder, connectionPool);
 		
 		try {
 			JSONParser jsonParser = new JSONParser();
-			//JSON데이터를 넣어 JSON Object 로 만들어 준다.
 			JSONObject jsonObject = (JSONObject) jsonParser.parse(data);
-			//books의 배열을 추출
 			JSONObject jObj = (JSONObject) jsonObject.get("TbPublicWifiInfo");
 
 			totalCount = (long)jObj.get("list_total_count");
@@ -45,7 +42,7 @@ public class ApiExplorer {
 			
 			while(start < totalCount) {
 				urlBuilder = urlBuilder(start, end);
-				data = getWifiJson(urlBuilder);
+				data = getWifiJson(urlBuilder, connectionPool);
 				jsonObject = (JSONObject) jsonParser.parse(data);
 
 				jObj = (JSONObject) jsonObject.get("TbPublicWifiInfo");
@@ -78,9 +75,9 @@ public class ApiExplorer {
 		return urlBuilder;
 	}
 	
-	public String getWifiJson(StringBuilder urlBuilder) throws IOException {
+	public String getWifiJson(StringBuilder urlBuilder, ConnectionPool connectionPool) throws IOException {
 		
-		OkHttpClient client = new OkHttpClient();
+		OkHttpClient client = new OkHttpClient.Builder().connectionPool(connectionPool).build();
 		Request request = new Request.Builder().url(urlBuilder.toString()).build();
 
 		  try (Response response = client.newCall(request).execute()) {

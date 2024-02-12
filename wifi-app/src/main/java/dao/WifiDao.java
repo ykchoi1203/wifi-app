@@ -5,6 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import main.java.dto.WifiDto;
@@ -14,52 +15,57 @@ import main.java.util.ConnectionUtil;
 public class WifiDao {
 	public WifiDao() {}
 	
-	public int wifiInsert(List<WifiDto> wifiList) throws ClassNotFoundException {
+	public int wifiInsert(List<WifiDto> wifiList) throws ClassNotFoundException, SQLException {
 		Connection connection = null;
 		PreparedStatement preparedStatement = null;
 
 		try {
 			connection = ConnectionUtil.getConnection();
+			connection.setAutoCommit(false);
 
-			String sql = "insert into wifi (X_SWIFI_MGR_NO, X_SWIFI_WRDOFC, X_SWIFI_MAIN_NM, X_SWIFI_ADRES1, X_SWIFI_ADRES2, "
+			String sql = " insert into wifi (X_SWIFI_MGR_NO, X_SWIFI_WRDOFC, X_SWIFI_MAIN_NM, X_SWIFI_ADRES1, X_SWIFI_ADRES2, "
 					+ " X_SWIFI_INSTL_FLOOR, X_SWIFI_INSTL_TY, X_SWIFI_INSTL_MBY, X_SWIFI_SVC_SE, X_SWIFI_CMCWR, "
-					+ "X_SWIFI_CNSTC_YEAR, X_SWIFI_INOUT_DOOR, X_SWIFI_REMARS3, LAT, LNT, WORK_DTTM) " +
-					" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-		
+					+ " X_SWIFI_CNSTC_YEAR, X_SWIFI_INOUT_DOOR, X_SWIFI_REMARS3, LAT, LNT, WORK_DTTM) " +
+					" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
+			
+			preparedStatement = connection.prepareStatement(sql);	
+			
 			for(int i=0; i<wifiList.size(); i++) {
-				
-				preparedStatement = connection.prepareStatement(sql);
-				if(!isAready(wifiList.get(i).getX_SWIFI_MGR_NO(), connection)) {
-					continue;
+				if(isAready(wifiList.get(i).getX_SWIFI_MGR_NO(), connection)) {		
+					preparedStatement.setString(1, wifiList.get(i).getX_SWIFI_MGR_NO());
+					preparedStatement.setString(2, wifiList.get(i).getX_SWIFI_WRDOFC());
+					preparedStatement.setString(3, wifiList.get(i).getX_SWIFI_MAIN_NM());
+					preparedStatement.setString(4, wifiList.get(i).getX_SWIFI_ADRES1());
+					preparedStatement.setString(5, wifiList.get(i).getX_SWIFI_ADRES2());
+					preparedStatement.setString(6, wifiList.get(i).getX_SWIFI_INSTL_FLOOR());
+					preparedStatement.setString(7, wifiList.get(i).getX_SWIFI_INSTL_TY());
+					preparedStatement.setString(8, wifiList.get(i).getX_SWIFI_INSTL_MBY());
+					preparedStatement.setString(9, wifiList.get(i).getX_SWIFI_SVC_SE());
+					preparedStatement.setString(10, wifiList.get(i).getX_SWIFI_CMCWR());
+					preparedStatement.setString(11, wifiList.get(i).getX_SWIFI_CNSTC_YEAR());
+					preparedStatement.setString(12, wifiList.get(i).getX_SWIFI_INOUT_DOOR());
+					preparedStatement.setString(13, wifiList.get(i).getX_SWIFI_REMARS3());
+					preparedStatement.setString(14, wifiList.get(i).getLAT());
+					preparedStatement.setString(15, wifiList.get(i).getLNT());
+					preparedStatement.setString(16, wifiList.get(i).getWORK_DTTM());
+		
+					preparedStatement.addBatch();
+					preparedStatement.clearParameters();
+					
 				}
-				preparedStatement.setString(1, wifiList.get(i).getX_SWIFI_MGR_NO());
-				preparedStatement.setString(2, wifiList.get(i).getX_SWIFI_WRDOFC());
-				preparedStatement.setString(3, wifiList.get(i).getX_SWIFI_MAIN_NM());
-				preparedStatement.setString(4, wifiList.get(i).getX_SWIFI_ADRES1());
-				preparedStatement.setString(5, wifiList.get(i).getX_SWIFI_ADRES2());
-				preparedStatement.setString(6, wifiList.get(i).getX_SWIFI_INSTL_FLOOR());
-				preparedStatement.setString(7, wifiList.get(i).getX_SWIFI_INSTL_TY());
-				preparedStatement.setString(8, wifiList.get(i).getX_SWIFI_INSTL_MBY());
-				preparedStatement.setString(9, wifiList.get(i).getX_SWIFI_SVC_SE());
-				preparedStatement.setString(10, wifiList.get(i).getX_SWIFI_CMCWR());
-				preparedStatement.setString(11, wifiList.get(i).getX_SWIFI_CNSTC_YEAR());
-				preparedStatement.setString(12, wifiList.get(i).getX_SWIFI_INOUT_DOOR());
-				preparedStatement.setString(13, wifiList.get(i).getX_SWIFI_REMARS3());
-				preparedStatement.setString(14, wifiList.get(i).getLAT());
-				preparedStatement.setString(15, wifiList.get(i).getLNT());
-				preparedStatement.setString(16, wifiList.get(i).getWORK_DTTM());
-	
-				preparedStatement.addBatch();
 				
 				if (i % 10000 == 0) {
                 	preparedStatement.executeBatch();
-                	
                 	preparedStatement.clearBatch();
-                	
+                	connection.commit();
                 }
+
 			}
+			preparedStatement.executeBatch();
+			connection.commit();
 
 		} catch (SQLException e) {
+			connection.rollback();
 			throw new RuntimeException(e);
 		} finally {
 			ConnectionUtil.close(connection, preparedStatement, null);
