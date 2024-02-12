@@ -29,7 +29,7 @@ public class WifiDao {
 					" values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?); ";
 			
 			preparedStatement = connection.prepareStatement(sql);	
-			
+			int count = 0;
 			for(int i=0; i<wifiList.size(); i++) {
 				if(isAready(wifiList.get(i).getX_SWIFI_MGR_NO(), connection)) {		
 					preparedStatement.setString(1, wifiList.get(i).getX_SWIFI_MGR_NO());
@@ -51,18 +51,22 @@ public class WifiDao {
 		
 					preparedStatement.addBatch();
 					preparedStatement.clearParameters();
-					
+					count++;
 				}
 				
 				if (i % 10000 == 0) {
+					if(count == 0) continue;
                 	preparedStatement.executeBatch();
                 	preparedStatement.clearBatch();
                 	connection.commit();
+                	count = 0;
                 }
 
 			}
-			preparedStatement.executeBatch();
-			connection.commit();
+			if(count != 0) {
+				preparedStatement.executeBatch();
+				connection.commit();
+			}
 
 		} catch (SQLException e) {
 			connection.rollback();
