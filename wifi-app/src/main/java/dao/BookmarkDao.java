@@ -54,7 +54,7 @@ public class BookmarkDao {
 			String sql = "select bm.* ,  wifi.X_SWIFI_MAIN_NM as wifi_name, bmg.name as bmg_name " +
 					" from bookmark as bm join wifi on wifi.X_SWIFI_MGR_NO = bm.X_SWIFI_MGR_NO "
 					+ " join bookmark_group as bmg on bmg.BOOKMARK_GROUP_ID = bm.BOOKMARK_GROUP_ID"
-					+ " where bm.is_delete = 0 order by bm.make_date;";
+					+ " where bm.is_delete = 0 order by bm.make_date desc limit 20;";
 			
 			preparedStatement = connection.prepareStatement(sql);
 			
